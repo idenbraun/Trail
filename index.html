@@ -86,9 +86,9 @@
             justify-content: space-between;
         }
         
-        /* Top bar - logo and REC */
+        /* Top bar - logo and REC (NO BOX) */
         .top-bar {
-            padding: calc(env(safe-area-inset-top, 0px) + 16px) 20px 0;
+            padding: calc(env(safe-area-inset-top, 0px) + 12px) 20px 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -104,22 +104,16 @@
         .logo-text {
             font-family: 'Space Grotesk', sans-serif;
             font-weight: 700;
-            font-size: 22px;
+            font-size: 24px;
             letter-spacing: -0.04em;
             color: var(--text);
-            text-shadow: 0 2px 12px rgba(0,0,0,0.5);
+            text-shadow: 0 2px 16px rgba(0,0,0,0.8), 0 0 4px rgba(0,0,0,0.5);
         }
         
         .rec-badge {
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 10px 14px;
-            background: rgba(255, 71, 87, 0.2);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid rgba(255, 71, 87, 0.3);
-            border-radius: 100px;
             opacity: 0;
             transform: translateY(-8px);
             transition: all 0.3s ease;
@@ -131,27 +125,29 @@
         }
         
         .rec-dot {
-            width: 6px;
-            height: 6px;
+            width: 8px;
+            height: 8px;
             background: var(--danger);
             border-radius: 50%;
             animation: pulse 1.4s ease-in-out infinite;
+            box-shadow: 0 0 12px var(--danger);
         }
         
         @keyframes pulse {
-            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.6); }
-            50% { opacity: 0.6; box-shadow: 0 0 0 6px rgba(255, 71, 87, 0); }
+            0%, 100% { opacity: 1; box-shadow: 0 0 12px var(--danger); }
+            50% { opacity: 0.6; box-shadow: 0 0 20px var(--danger); }
         }
         
         .rec-text {
-            font-size: 11px;
-            font-weight: 600;
+            font-size: 13px;
+            font-weight: 700;
             color: var(--danger);
             text-transform: uppercase;
-            letter-spacing: 0.12em;
+            letter-spacing: 0.1em;
+            text-shadow: 0 2px 16px rgba(0,0,0,0.8), 0 0 4px rgba(0,0,0,0.5);
         }
         
-        /* Bottom panel */
+        /* Bottom panel - TRANSPARENT, NO BLUR */
         .bottom-panel {
             position: relative;
             z-index: 20;
@@ -161,41 +157,19 @@
             gap: 12px;
         }
         
-        .bottom-panel::before {
-            content: '';
-            position: absolute;
-            inset: -40px -16px 0 -16px;
-            background: linear-gradient(180deg, transparent 0%, rgba(10, 10, 11, 0.6) 30%, rgba(10, 10, 11, 0.85) 100%);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            pointer-events: none;
-            z-index: -1;
-        }
-        
-        /* Stats */
+        /* Stats - TRANSPARENT */
         .stats-bento {
             display: flex;
             gap: 8px;
         }
         
         .stat-tile {
-            background: rgba(255, 255, 255, 0.06);
-            backdrop-filter: blur(24px) saturate(180%);
-            -webkit-backdrop-filter: blur(24px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: transparent;
             border-radius: 20px;
             padding: 16px;
             position: relative;
             overflow: hidden;
             flex: 1;
-        }
-        
-        .stat-tile::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
         }
         
         .stat-tile.primary {
@@ -208,8 +182,9 @@
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.14em;
-            color: var(--text-faint);
+            color: rgba(255, 255, 255, 0.6);
             margin-bottom: 8px;
+            text-shadow: 0 1px 8px rgba(0,0,0,0.6);
         }
         
         .stat-value {
@@ -219,6 +194,8 @@
             line-height: 1;
             letter-spacing: -0.04em;
             font-variant-numeric: tabular-nums;
+            color: var(--text);
+            text-shadow: 0 2px 12px rgba(0,0,0,0.7);
         }
         
         .stat-tile.primary .stat-value {
@@ -228,7 +205,7 @@
         .stat-unit {
             font-size: 14px;
             font-weight: 500;
-            color: var(--text-dim);
+            color: rgba(255, 255, 255, 0.7);
             margin-left: 4px;
             letter-spacing: 0;
         }
@@ -284,15 +261,15 @@
             width: 62px;
             flex: none;
             padding: 0;
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(20px) saturate(180%);
             -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             color: var(--text);
         }
         
         .btn-icon-only:active {
-            background: rgba(255, 255, 255, 0.14);
+            background: rgba(255, 255, 255, 0.18);
         }
         
         .btn-icon-only svg {
@@ -690,7 +667,7 @@
             </div>
         </div>
         
-        <div class="actions">
+        <div class="actions" id="actionButtons">
             <button class="btn-action btn-save" onclick="saveCard()">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
                 Save Image
@@ -752,7 +729,7 @@
                 lineJoin: 'round'
             }).addTo(mainMap);
             
-            // Try to get initial location
+            // Get initial location
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (pos) => {
@@ -766,21 +743,25 @@
         }
         
         function recenterMap() {
-            if (lastKnownPosition) {
-                mainMap.panTo([lastKnownPosition.lat, lastKnownPosition.lng], { animate: true });
-                showToast('Centered on location');
-            } else {
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(
-                        (pos) => {
-                            lastKnownPosition = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                            mainMap.setView([lastKnownPosition.lat, lastKnownPosition.lng], 16);
-                            showToast('Centered on location');
-                        },
-                        () => showToast('Location unavailable'),
-                        { enableHighAccuracy: true, timeout: 5000 }
-                    );
-                }
+            showToast('Updating location...');
+            
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        lastKnownPosition = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                        mainMap.setView([lastKnownPosition.lat, lastKnownPosition.lng], 17, { animate: true });
+                        showToast('Centered on your location');
+                    },
+                    (err) => {
+                        if (lastKnownPosition) {
+                            mainMap.panTo([lastKnownPosition.lat, lastKnownPosition.lng], { animate: true });
+                            showToast('Centered on last known location');
+                        } else {
+                            showToast('Location unavailable');
+                        }
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                );
             }
         }
         
@@ -1032,100 +1013,149 @@
             return [20, 20];
         }
         
-        // ============ RENDER CARD TO IMAGE ============
-        async function renderCardToCanvas() {
-            const card = document.getElementById('card');
-            const cardMapEl = document.getElementById('cardMap');
+        // ============ SCREENSHOT RENDERING ============
+        async function captureFullScreen() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const scale = 2;
             
-            // Disable map interaction during render
-            if (cardMap) {
-                cardMap.dragging.disable();
-                cardMap.scrollWheelZoom.disable();
-                cardMap.doubleClickZoom.disable();
-                cardMap.touchZoom.disable();
-            }
+            // Create temporary container
+            const container = document.createElement('div');
+            container.style.position = 'fixed';
+            container.style.top = '-9999px';
+            container.style.left = '-9999px';
+            container.style.width = width + 'px';
+            container.style.height = height + 'px';
+            container.style.background = 'linear-gradient(160deg, #0f0f14 0%, #1a0f24 50%, #0f0f14 100%)';
+            container.style.overflow = 'hidden';
+            container.style.fontFamily = "'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+            container.style.color = '#fff';
+            container.style.letterSpacing = '-0.02em';
+            document.body.appendChild(container);
             
-            // Force map to redraw and wait for tiles
-            if (cardMap) {
-                cardMap.invalidateSize();
-                cardMap.eachLayer(l => { if (l.redraw) l.redraw(); });
-            }
+            // Add mesh gradient
+            const mesh = document.createElement('div');
+            mesh.style.position = 'absolute';
+            mesh.style.top = '-50%';
+            mesh.style.left = '-50%';
+            mesh.style.width = '200%';
+            mesh.style.height = '200%';
+            mesh.style.background = 'radial-gradient(circle at 20% 30%, rgba(196, 240, 77, 0.15) 0%, transparent 40%), radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 40%)';
+            container.appendChild(mesh);
             
-            // Wait for tiles to load
-            await new Promise(r => setTimeout(r, 1500));
-            
-            // Strategy: render map to canvas separately, then composite with UI
+            // Render map to canvas
             let mapCanvas = null;
-            if (cardMap) {
-                mapCanvas = await renderLeafletMapToCanvas(cardMap, cardMapEl);
+            if (cardMap && route.length > 0) {
+                mapCanvas = await renderLeafletMapToCanvas(cardMap, document.getElementById('cardMap'));
             }
             
-            // Now render the whole card with html-to-image, replacing map area with our canvas
+            // Add map canvas
             if (mapCanvas) {
-                // Temporarily replace map div content with canvas
-                const originalContent = cardMapEl.innerHTML;
-                cardMapEl.innerHTML = '';
-                const tempCanvas = document.createElement('canvas');
-                tempCanvas.width = mapCanvas.width;
-                tempCanvas.height = mapCanvas.height;
-                tempCanvas.style.width = '100%';
-                tempCanvas.style.height = '100%';
-                tempCanvas.style.display = 'block';
-                tempCanvas.getContext('2d').drawImage(mapCanvas, 0, 0);
-                cardMapEl.appendChild(tempCanvas);
+                const mapDiv = document.createElement('div');
+                mapDiv.style.position = 'absolute';
+                mapDiv.style.top = '80px';
+                mapDiv.style.left = '20px';
+                mapDiv.style.right = '20px';
+                mapDiv.style.bottom = '180px';
+                mapDiv.style.borderRadius = '18px';
+                mapDiv.style.overflow = 'hidden';
                 
-                try {
-                    const result = await htmlToImage.toPng(card, {
-                        quality: 1,
-                        pixelRatio: 2,
-                        cacheBust: true,
-                        skipAutoScale: true,
-                    });
-                    
-                    // Restore
-                    cardMapEl.innerHTML = originalContent;
-                    setTimeout(() => cardMap.invalidateSize(), 50);
-                    
-                    // Load result into image then canvas
-                    const img = new Image();
-                    await new Promise((resolve, reject) => {
-                        img.onload = resolve;
-                        img.onerror = reject;
-                        img.src = result;
-                    });
-                    
-                    const finalCanvas = document.createElement('canvas');
-                    finalCanvas.width = img.width;
-                    finalCanvas.height = img.height;
-                    finalCanvas.getContext('2d').drawImage(img, 0, 0);
-                    return finalCanvas;
-                } catch (e) {
-                    cardMapEl.innerHTML = originalContent;
-                    setTimeout(() => cardMap.invalidateSize(), 50);
-                    throw e;
-                }
-            } else {
-                // Fallback: just use html-to-image
-                const result = await htmlToImage.toPng(card, {
-                    quality: 1,
-                    pixelRatio: 2,
+                const img = document.createElement('img');
+                img.src = mapCanvas.toDataURL('image/png');
+                img.style.width = '100%';
+                img.style.height = '100%';
+                img.style.display = 'block';
+                mapDiv.appendChild(img);
+                container.appendChild(mapDiv);
+            }
+            
+            // Add logo
+            const logo = document.createElement('div');
+            logo.style.position = 'absolute';
+            logo.style.top = '28px';
+            logo.style.left = '28px';
+            logo.style.fontFamily = "'Space Grotesk', sans-serif";
+            logo.style.fontSize = '13px';
+            logo.style.fontWeight = '600';
+            logo.style.letterSpacing = '0.08em';
+            logo.style.textTransform = 'uppercase';
+            logo.style.opacity = '0.6';
+            logo.style.display = 'flex';
+            logo.style.alignItems = 'center';
+            logo.style.gap = '6px';
+            logo.innerHTML = '<span style="width:5px;height:5px;border-radius:50%;background:currentColor"></span><span>Traila</span>';
+            container.appendChild(logo);
+            
+            // Add date
+            const date = document.createElement('div');
+            date.style.position = 'absolute';
+            date.style.top = '28px';
+            date.style.right = '28px';
+            date.style.fontSize = '11px';
+            date.style.fontWeight = '500';
+            date.style.opacity = '0.5';
+            date.style.letterSpacing = '0.05em';
+            date.textContent = document.getElementById('cardDate').textContent;
+            container.appendChild(date);
+            
+            // Add stats
+            const stats = document.createElement('div');
+            stats.style.position = 'absolute';
+            stats.style.bottom = '40px';
+            stats.style.left = '28px';
+            stats.style.right = '28px';
+            stats.style.display = 'grid';
+            stats.style.gridTemplateColumns = 'repeat(3, 1fr)';
+            stats.style.gap = '16px';
+            stats.style.paddingTop = '20px';
+            stats.style.borderTop = '1px solid rgba(255,255,255,0.08)';
+            
+            const statsData = [
+                { label: 'Distance', value: document.getElementById('cardDistance').textContent, unit: 'km' },
+                { label: 'Time', value: document.getElementById('cardTime').textContent, unit: '' },
+                { label: 'Pace', value: document.getElementById('cardPace').textContent, unit: '/km' }
+            ];
+            
+            statsData.forEach(s => {
+                const stat = document.createElement('div');
+                stat.innerHTML = `
+                    <div style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.16em;opacity:0.5;margin-bottom:6px">${s.label}</div>
+                    <div style="font-family:'Space Grotesk',sans-serif;font-weight:500;font-size:24px;letter-spacing:-0.03em;line-height:1;font-variant-numeric:tabular-nums">
+                        ${s.value}<span style="font-size:11px;font-weight:500;opacity:0.5;margin-left:2px">${s.unit}</span>
+                    </div>
+                `;
+                stats.appendChild(stat);
+            });
+            
+            container.appendChild(stats);
+            
+            // Render to image
+            try {
+                const dataUrl = await htmlToImage.toPng(container, {
+                    width: width,
+                    height: height,
+                    pixelRatio: scale,
                     cacheBust: true,
                 });
+                
                 const img = new Image();
                 await new Promise((resolve, reject) => {
                     img.onload = resolve;
                     img.onerror = reject;
-                    img.src = result;
+                    img.src = dataUrl;
                 });
-                const finalCanvas = document.createElement('canvas');
-                finalCanvas.width = img.width;
-                finalCanvas.height = img.height;
-                finalCanvas.getContext('2d').drawImage(img, 0, 0);
-                return finalCanvas;
+                
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                canvas.getContext('2d').drawImage(img, 0, 0);
+                
+                return canvas;
+            } finally {
+                document.body.removeChild(container);
             }
         }
         
-        // Render Leaflet map to canvas by drawing tiles manually
         async function renderLeafletMapToCanvas(map, container) {
             const rect = container.getBoundingClientRect();
             const scale = 2;
@@ -1135,11 +1165,9 @@
             const ctx = canvas.getContext('2d');
             ctx.scale(scale, scale);
             
-            // Fill background
             ctx.fillStyle = '#0a0a0b';
             ctx.fillRect(0, 0, rect.width, rect.height);
             
-            // Get all tile elements
             const tilePane = map.getPane('tilePane');
             if (!tilePane) return canvas;
             
@@ -1150,7 +1178,6 @@
                 const style = tile.style;
                 const src = tile.src;
                 
-                // Parse transform
                 const transform = style.transform || style.webkitTransform || '';
                 const match = transform.match(/translate3d\(([^,]+),\s*([^,]+),\s*([^)]+)\)/);
                 if (!match) return;
@@ -1172,7 +1199,6 @@
             
             await Promise.all(promises);
             
-            // Now draw the polylines on top
             if (cardGlow && route.length > 0) {
                 drawPolylineOnCanvas(ctx, map, cardGlow, {
                     color: themeConfig.glowColor,
@@ -1216,7 +1242,7 @@
             loading.classList.add('active');
             
             try {
-                const canvas = await renderCardToCanvas();
+                const canvas = await captureFullScreen();
                 
                 canvas.toBlob((blob) => {
                     const url = URL.createObjectURL(blob);
@@ -1232,12 +1258,6 @@
                 console.error(e);
             } finally {
                 loading.classList.remove('active');
-                if (cardMap) {
-                    cardMap.dragging.enable();
-                    cardMap.scrollWheelZoom.enable();
-                    cardMap.doubleClickZoom.enable();
-                    cardMap.touchZoom.enable();
-                }
             }
         }
         
@@ -1246,7 +1266,7 @@
             loading.classList.add('active');
             
             try {
-                const canvas = await renderCardToCanvas();
+                const canvas = await captureFullScreen();
                 
                 canvas.toBlob(async (blob) => {
                     const file = new File([blob], 'traila.png', { type: 'image/png' });
@@ -1268,12 +1288,6 @@
                         fallbackShare(canvas);
                     }
                     loading.classList.remove('active');
-                    if (cardMap) {
-                        cardMap.dragging.enable();
-                        cardMap.scrollWheelZoom.enable();
-                        cardMap.doubleClickZoom.enable();
-                        cardMap.touchZoom.enable();
-                    }
                 }, 'image/png');
             } catch (e) {
                 showToast('Share failed');
