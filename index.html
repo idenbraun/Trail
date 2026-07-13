@@ -58,15 +58,11 @@
             position: absolute;
             inset: 0;
             z-index: 1;
+            background: #0a0a0b; /* Фолбэк, если карта грузится */
         }
         
         #map, #map * {
             pointer-events: auto !important;
-        }
-        
-        /* Темная тема для карты, работающая в России (фильтр только на тайлы, не на маркеры) */
-        .leaflet-tile-pane {
-            filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
         }
         
         .leaflet-control-attribution { display: none !important; }
@@ -431,7 +427,7 @@
             border-radius: 18px;
             overflow: hidden;
             position: relative;
-            background: rgba(0,0,0,0.3);
+            background: #0a0a0b;
             border: 1px solid rgba(255,255,255,0.08);
             min-height: 200px;
         }
@@ -863,7 +859,7 @@
         }
         
         // ============================================================
-        // MAP MATCHING (ИСПОЛЬЗУЕМ СТАБИЛЬНЫЙ СЕРВЕР ДЛЯ РФ/ЕВРОПЫ)
+        // MAP MATCHING
         // ============================================================
         async function snapToRoad(points, profile = 'foot') {
             if (points.length < 2) return points;
@@ -876,7 +872,6 @@
             const coords = simplified.map(p => `${p.lng.toFixed(6)},${p.lat.toFixed(6)}`).join(';');
             const radiuses = simplified.map(() => 30).join(';');
             
-            // Заменили project-osrm на routing.openstreetmap.de (гораздо стабильнее для РФ)
             const url = `https://routing.openstreetmap.de/routed-foot/match/v1/foot/${coords}?overview=full&geometries=geojson&radiuses=${radiuses}&gaps=ignore`;
             
             try {
@@ -974,9 +969,10 @@
         let activityProfile = 'foot';
         let currentHeading = 0;
         
-        // ИСПОЛЬЗУЕМ НАДЕЖНЫЕ РОССИЙСКИЕ ТАЙЛЫ (OpenStreetMap.ru)
+        // НАДЕЖНЫЕ ТЁМНЫЕ ТАЙЛЫ (CartoDB Dark), работают через Cloudflare в РФ
         const themeConfig = {
-            tileUrl: 'https://tile.openstreetmap.ru/{z}/{x}/{y}.png',
+            tileUrl: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+            subdomains: ['a', 'b', 'c', 'd'],
             lineColor: '#c4f04d',
             glowColor: '#c4f04d',
             markerColor: '#c4f04d'
@@ -1096,9 +1092,10 @@
                 attributionControl: false
             }).setView([55.7558, 37.6173], 15);
             
-            // Добавлен crossOrigin: 'anonymous' для предотвращения tainted canvas при скриншоте
+            // Добавлены subdomains и crossOrigin для стабильности и скриншотов
             L.tileLayer(themeConfig.tileUrl, { 
                 maxZoom: 19,
+                subdomains: themeConfig.subdomains,
                 crossOrigin: 'anonymous'
             }).addTo(mainMap);
             
@@ -1235,6 +1232,8 @@
         }
         
         function handleGPSUpdate(pos) {
+            if (!mainMap) return; // Защита от вызова до инициализации карты
+            
             const { latitude, longitude, accuracy, heading } = pos.coords;
             
             lastKnownPosition = { lat: latitude, lng: longitude };
@@ -1256,7 +1255,6 @@
                 return;
             }
             
-            // УЖЕСТЧЕННЫЙ ПОРОГ ТОЧНОСТИ ДЛЯ МАКСИМАЛЬНОГО КАЧЕСТВА
             if (accuracy > 20) return;
             
             const filtered = {
@@ -1270,7 +1268,6 @@
                 const dist = haversineDistance(lastAcceptedPoint, filtered);
                 const timeDiff = (filtered.t - lastAcceptedPoint.t) / 1000;
                 
-                // ФИЛЬТР GPS-СКАЧКОВ: если скорость > 15 м/с (~54 км/ч), это артефакт GPS
                 if (timeDiff > 0) {
                     const speed = dist / timeDiff;
                     if (speed > 15) {
@@ -1279,7 +1276,7 @@
                     }
                 }
                 
-                if (dist < 2) return; // Игнорируем микро-движения
+                if (dist < 2) return;
             }
             
             lastAcceptedPoint = filtered;
@@ -1420,7 +1417,6 @@
             const opts = { day: 'numeric', month: 'short', year: 'numeric' };
             document.getElementById('cardDate').textContent = now.toLocaleDateString('ru-RU', opts).toUpperCase();
             
-            // Даем DOM время на отрисовку перед инициализацией карты
             setTimeout(() => initCardMap(), 300);
         }
         
@@ -1441,7 +1437,8 @@
             
             L.tileLayer(themeConfig.tileUrl, { 
                 maxZoom: 19,
-                crossOrigin: 'anonymous' // КРИТИЧНО ДЛЯ СКРИНШОТА
+                subdomains: themeConfig.subdomains,
+                crossOrigin: 'anonymous'
             }).addTo(cardMap);
             
             const displayRoute = matchedRoute || route;
@@ -1476,7 +1473,6 @@
                     cardMap.fitBounds(bounds, { padding: [30, 30], maxZoom: 18 });
                 }
                 
-                // КРИТИЧНО: сообщаем Leaflet пересчитать размеры после того, как экран стал видимым
                 setTimeout(() => {
                     cardMap.invalidateSize();
                 }, 100);
@@ -1484,24 +1480,22 @@
         }
         
         // ============================================================
-        // SCREENSHOT RENDERING - НАДЕЖНАЯ ВЕРСИЯ ЧЕРЕЗ html2canvas
+        // SCREENSHOT RENDERING
         // ============================================================
         async function captureCardAsImage() {
             const card = document.getElementById('card');
             
-            // Гарантируем, что карта правильно отрендерена перед снимком
             if (cardMap) {
                 cardMap.invalidateSize();
-                await new Promise(resolve => setTimeout(resolve, 800)); // Ждем загрузки тайлов
+                await new Promise(resolve => setTimeout(resolve, 800));
             }
             
             try {
-                // html2canvas автоматически обрабатывает CSS-градиенты, шрифты и изображения
                 const canvas = await html2canvas(card, {
                     useCORS: true,
                     allowTaint: false,
-                    backgroundColor: '#0f0f14',
-                    scale: 2, // Высокое разрешение для четкости
+                    backgroundColor: '#0f0f14', // Гарантирует отсутствие прозрачности/белого фона
+                    scale: 2,
                     logging: false,
                     ignoreElements: (element) => element.id === 'cardLoading'
                 });
