@@ -325,7 +325,7 @@
         .card {
             position: relative;
             width: 100%;
-            aspect-ratio: 1 / 1;
+            aspect-ratio: 9 / 16;
             border-radius: 28px;
             overflow: hidden;
             background: linear-gradient(160deg, #0f0f14 0%, #1a0f24 50%, #0f0f14 100%);
@@ -739,15 +739,13 @@
         }
         
         function recenterMap() {
-            showToast('Updating location...');
-            
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (pos) => {
                         lastKnownPosition = { lat: pos.coords.latitude, lng: pos.coords.longitude };
                         mainMap.setView([lastKnownPosition.lat, lastKnownPosition.lng], 17, { animate: true });
                         
-                        // Add/update location marker
+                        // Add/update location marker (simple, no animation)
                         if (locationMarker) {
                             mainMap.removeLayer(locationMarker);
                         }
@@ -755,27 +753,18 @@
                         const markerIcon = L.divIcon({
                             className: '',
                             html: `<div style="
-                                width: 20px;
-                                height: 20px;
+                                width: 16px;
+                                height: 16px;
                                 border-radius: 50%;
                                 background: ${themeConfig.markerColor};
                                 border: 3px solid #fff;
-                                box-shadow: 0 0 20px ${themeConfig.markerColor}, 0 0 40px ${themeConfig.markerColor};
-                                animation: markerPulse 2s ease-in-out infinite;
-                            "></div>
-                            <style>
-                                @keyframes markerPulse {
-                                    0%, 100% { transform: scale(1); opacity: 1; }
-                                    50% { transform: scale(1.2); opacity: 0.8; }
-                                }
-                            </style>`,
-                            iconSize: [20, 20],
-                            iconAnchor: [10, 10]
+                                box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                            "></div>`,
+                            iconSize: [16, 16],
+                            iconAnchor: [8, 8]
                         });
                         
                         locationMarker = L.marker([lastKnownPosition.lat, lastKnownPosition.lng], { icon: markerIcon }).addTo(mainMap);
-                        
-                        showToast('Centered on your location');
                         
                         // Remove marker after 3 seconds
                         setTimeout(() => {
@@ -788,9 +777,6 @@
                     (err) => {
                         if (lastKnownPosition) {
                             mainMap.panTo([lastKnownPosition.lat, lastKnownPosition.lng], { animate: true });
-                            showToast('Centered on last known location');
-                        } else {
-                            showToast('Location unavailable');
                         }
                     },
                     { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
@@ -933,7 +919,6 @@
         function initCardMap() {
             if (cardMap) cardMap.remove();
             
-            // DISABLE all interactions
             cardMap = L.map('cardMap', {
                 zoomControl: false,
                 attributionControl: false,
@@ -975,7 +960,6 @@
                 
                 const bounds = cardPolyline.getBounds();
                 if (bounds.isValid()) {
-                    // Fit bounds with equal padding to keep square aspect
                     cardMap.fitBounds(bounds, { 
                         padding: [30, 30],
                         maxZoom: 18
