@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Traila MVP</title>
+    
+    <!-- Leaflet CSS (карты) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow: hidden;
+        }
+        
+        #map {
+            height: 70vh;
+            width: 100%;
+        }
+        
+        .stats {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+        
+        .stat-item {
+            margin-bottom: 5px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+        
+        button {
+            flex: 1;
+            padding: 18px;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        
+        .start {
+            background: #00FF88;
+            color: black;
+        }
+        
+        .stop {
+            background: #FF3366;
+            color: white;
+        }
+        
+        .clear {
+            background: white;
+            color: black;
+        }
+        
+        button:active {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    
+    <div class="stats">
+        <div class="stat-item">📍 Точек: <span id="points">0</span></div>
+        <div class="stat-item">📏 Дистанция: <span id="distance">0.00</span> км</div>
+        <div class="stat-item">⏱️ Время: <span id="time">00:00</span></div>
+    </div>
+    
+    <div class="controls">
+        <button class="start" id="startBtn" onclick="startTracking()">▶ СТАРТ</button>
+        <button class="stop" id="stopBtn" onclick="stopTracking()" style="display:none"> СТОП</button>
+        <button class="clear" onclick="clearRoute()"> ОЧИСТИТЬ</button>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        let map, polyline, watchId;
+        let route = [];
+        let startTime;
+        let isTracking = false;
+        
+        // Инициализация карты
+        function initMap() {
+            map = L.map('map').setView([55.7558, 37.6173], 15);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+            
+            polyline = L.polyline([], {
+                color: '#00FF88',
+                weight: 4,
+                opacity: 0.9,
+                lineCap: 'round',
+                lineJoin: 'round'
+            }).addTo(map);
+        }
+        
+        // Старт трекинга
+        function startTracking() {
+            if (!navigator.geolocation) {
+                alert('Геолокация не поддерживается');
+                return;
+            }
+            
+            isTracking = true;
+            route = [];
+            startTime = new Date();
+            
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('stopBtn').style.display = 'block';
+            
+            watchId = navigator.geolocation.watchPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    
+                    route.push({ lat, lng });
+                    polyline.addLatLng([lat, lng]);
+                    
+                    // Центрируем карту на последней точке
+                    map.setView([lat, lng]);
+                    
+                    // Обновляем статистику
+                    updateStats();
+                },
+                (error) => {
+                    console.error('Ошибка GPS:', error);
+                    alert('Ошибка получения координат: ' + error.message);
+                },
+                {
+                    enableHighAccuracy: true,
+                    maximumAge: 0,
+                    timeout: 5000
+                }
+            );
+        }
+        
+        // Стоп трекинга
+        function stopTracking() {
+            if (watchId) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+            isTracking = false;
+            
+            document.getElementById('startBtn').style.display = 'block';
+            document.getElementById('stopBtn').style.display = 'none';
+        }
+        
+        // Очистка маршрута
+        function clearRoute() {
+            stopTracking();
+            route = [];
+            polyline.setLatLngs([]);
+            updateStats();
+        }
+        
+        // Обновление статистики
+        function updateStats() {
+            document.getElementById('points').textContent = route.length;
+            document.getElementById('distance').textContent = calculateDistance().toFixed(2);
+            
+            if (startTime) {
+                const elapsed = Math.floor((new Date() - startTime) / 1000);
+                const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+                const seconds = (elapsed % 60).toString().padStart(2, '0');
+                document.getElementById('time').textContent = `${minutes}:${seconds}`;
+            }
+        }
+        
+        // Расчет дистанции (Haversine)
+        function calculateDistance() {
+            if (route.length < 2) return 0;
+            
+            let total = 0;
+            const R = 6371; // радиус Земли в км
+            
+            for (let i = 1; i < route.length; i++) {
+                const lat1 = route[i-1].lat * Math.PI / 180;
+                const lat2 = route[i].lat * Math.PI / 180;
+                const dLat = (route[i].lat - route[i-1].lat) * Math.PI / 180;
+                const dLon = (route[i].lng - route[i-1].lng) * Math.PI / 180;
+                
+                const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                         Math.cos(lat1) * Math.cos(lat2) *
+                         Math.sin(dLon/2) * Math.sin(dLon/2);
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                
+                total += R * c;
+            }
+            
+            return total;
+        }
+        
+        // Запуск при загрузке
+        window.onload = initMap;
+    </script>
+</body>
+</html>
